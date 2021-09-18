@@ -16,7 +16,8 @@ func TestJsonEncoder(t *testing.T) {
 
 	enc.Encode(exampleStruct{"<>", false})
 
-	expected := "{\"c\":\"<>\",\"m\":false}\n"
+	expected := `{"c":"<>","m":false}
+`
 	if buf.String() != expected {
 		t.Errorf("Error marshaled incorrectly: got %v want %v",
 			buf.String(), expected)
