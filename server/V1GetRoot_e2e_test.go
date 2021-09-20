@@ -7,9 +7,10 @@ import (
 	"github.com/compiledpanda/wren-server-go/test"
 )
 
-func TestE2ERoot(t *testing.T) {
-	statusCode, body := test.CallGetEndpoint(t, Routes(), "/")
+func TestE2EV1GetRoot(t *testing.T) {
+	statusCode, body := test.CallGetEndpoint(t, Routes(), "/v1/")
 
-	expected := "Hello World\n"
+	expected := `{"status":"ONLINE"}
+`
 	test.VerifyStringResponse(t, statusCode, string(body), http.StatusOK, expected)
 }

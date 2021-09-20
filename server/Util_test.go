@@ -15,7 +15,7 @@ func TestReturnJSON(t *testing.T) {
 
 	ReturnJSON(rr, http.StatusOK, exampleStruct{"<>", false})
 
-	if status := rr.Code; status != http.StatusMethodNotAllowed {
+	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
