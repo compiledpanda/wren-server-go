@@ -1,25 +1,29 @@
 package server
 
 import (
-	"bytes"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
-func TestJsonEncoder(t *testing.T) {
+func TestReturnJSON(t *testing.T) {
 	type exampleStruct struct {
 		Content   string `json:"c"`
 		Multiline bool   `json:"m"`
 	}
+	rr := httptest.NewRecorder()
 
-	buf := new(bytes.Buffer)
-	enc := JsonEncoder(buf)
+	ReturnJSON(rr, http.StatusOK, exampleStruct{"<>", false})
 
-	enc.Encode(exampleStruct{"<>", false})
+	if status := rr.Code; status != http.StatusMethodNotAllowed {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
 
 	expected := `{"c":"<>","m":false}
 `
-	if buf.String() != expected {
-		t.Errorf("Error marshaled incorrectly: got %v want %v",
-			buf.String(), expected)
+	if rr.Body.String() != expected {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), expected)
 	}
 }
