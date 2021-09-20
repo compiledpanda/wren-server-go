@@ -34,7 +34,7 @@ func main() {
 	// TODO #2 Allow shutdown timeout to be configurable
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
 	defer cancel()
-	srv.Shutdown(ctx)
+	_ = srv.Shutdown(ctx) // Ignore error since we are only making a best effort anyway
 	log.Println("shutting down")
 	os.Exit(0)
 }
