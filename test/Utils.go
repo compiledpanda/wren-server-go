@@ -2,9 +2,12 @@ package test
 
 import (
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gorilla/mux"
 )
 
 /** Test Utilities **/
@@ -22,14 +25,34 @@ func CallHandler(t *testing.T, handler func(http.ResponseWriter, *http.Request),
 	return rr
 }
 
-func VerifyStringResponse(t *testing.T, rr *httptest.ResponseRecorder, statusCode int, body string) {
-	if status := rr.Code; status != statusCode {
+func VerifyStringResponse(t *testing.T, expectedStatusCode int, expectedBody string, statusCode int, body string) {
+	if expectedStatusCode != statusCode {
 		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, statusCode)
+			expectedStatusCode, statusCode)
 	}
 
-	if rr.Body.String() != body {
+	if expectedBody != body {
 		t.Errorf("handler returned unexpected body: got %v want %v",
-			rr.Body.String(), body)
+			expectedBody, body)
 	}
+}
+
+func CallGetEndpoint(t *testing.T, router *mux.Router, url string) (statusCode int, body []byte) {
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	res, err := http.Get(ts.URL + url)
+	if err != nil {
+		t.Fatal(err)
+	}
+	statusCode = res.StatusCode
+
+	body, err = ioutil.ReadAll(res.Body)
+	res.Body.Close()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return
 }

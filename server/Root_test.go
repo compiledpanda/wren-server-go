@@ -11,5 +11,5 @@ func TestRoot(t *testing.T) {
 	rr := test.CallHandler(t, Root, "GET", "/v1/", nil)
 
 	expected := "Hello World\n"
-	test.VerifyStringResponse(t, rr, http.StatusOK, expected)
+	test.VerifyStringResponse(t, rr.Code, rr.Body.String(), http.StatusOK, expected)
 }

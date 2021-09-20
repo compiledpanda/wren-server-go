@@ -12,5 +12,5 @@ func TestV1GetRoot(t *testing.T) {
 
 	expected := `{"status":"ONLINE"}
 `
-	test.VerifyStringResponse(t, rr, http.StatusOK, expected)
+	test.VerifyStringResponse(t, rr.Code, rr.Body.String(), http.StatusOK, expected)
 }

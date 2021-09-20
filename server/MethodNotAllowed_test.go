@@ -12,5 +12,5 @@ func TestMethodNotAllowed(t *testing.T) {
 
 	expected := `{"code":"METHOD_NOT_ALLOWED","description":"Method Not Allowed"}
 `
-	test.VerifyStringResponse(t, rr, http.StatusMethodNotAllowed, expected)
+	test.VerifyStringResponse(t, rr.Code, rr.Body.String(), http.StatusMethodNotAllowed, expected)
 }
