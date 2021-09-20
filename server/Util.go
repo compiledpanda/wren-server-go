@@ -7,7 +7,7 @@ import (
 
 func ReturnJSON(w http.ResponseWriter, statusCode int, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusMethodNotAllowed)
+	w.WriteHeader(statusCode)
 
 	enc := json.NewEncoder(w)
 	// Do NOT escape characters (i.e. < and >) as html

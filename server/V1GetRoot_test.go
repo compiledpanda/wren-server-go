@@ -7,9 +7,10 @@ import (
 	"github.com/compiledpanda/wren-server-go/test"
 )
 
-func TestRoot(t *testing.T) {
-	rr := test.CallHandler(t, Root, "GET", "/v1/", nil)
+func TestV1GetRoot(t *testing.T) {
+	rr := test.CallHandler(t, V1GetRoot, "GET", "/v1/", nil)
 
-	expected := "Hello World\n"
+	expected := `{"status":"ONLINE"}
+`
 	test.VerifyStringResponse(t, rr, http.StatusOK, expected)
 }
