@@ -14,6 +14,7 @@ func Routes(cfg *Config) *mux.Router {
 	// Add Routes
 	r.HandleFunc("/", Root).Methods("GET")
 	r.HandleFunc("/v1/", V1GetRoot).Methods("GET")
+	r.HandleFunc("/v1/metadata", V1GetMetadata(cfg)).Methods("GET")
 
 	// All unmatched routes should result in a 405 Method Not Allowed
 	r.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
