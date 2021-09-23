@@ -12,10 +12,11 @@ import (
 )
 
 func main() {
-	// TODO #2 call config.Get() and pass in cfg object to server.Setup()
+	// TODO #2 Call config.Get() and pass in cfg object to server.Setup()
 	cfg := &server.Config{}
 
 	// Open our Database
+	// TODO #2 Pull bolt db name and options from config
 	db, err := bolt.Open("wren.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		log.Fatal(err)
