@@ -7,14 +7,24 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/boltdb/bolt"
 	"github.com/compiledpanda/wren-server-go/server"
 )
 
 func main() {
 	// TODO #2 call config.Get() and pass in cfg object to server.Setup()
+	cfg := &server.Config{}
+
+	// Open our Database
+	db, err := bolt.Open("wren.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	cfg.DB = db
 
 	// Setup our Server
-	srv := server.Setup()
+	srv := server.Setup(cfg)
 
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {

@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func Routes() *mux.Router {
+func Routes(cfg *Config) *mux.Router {
 	// Create Router
 	r := mux.NewRouter()
 
@@ -22,7 +22,7 @@ func Routes() *mux.Router {
 	return r
 }
 
-func Setup() *http.Server {
+func Setup(cfg *Config) *http.Server {
 
 	// Create Server
 	srv := &http.Server{
@@ -33,7 +33,7 @@ func Setup() *http.Server {
 		ReadTimeout:  time.Second * 15,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout:  time.Second * 60,
-		Handler:      Routes(),
+		Handler:      Routes(cfg),
 	}
 
 	return srv

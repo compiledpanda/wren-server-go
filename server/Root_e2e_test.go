@@ -8,7 +8,7 @@ import (
 )
 
 func TestE2ERoot(t *testing.T) {
-	statusCode, body := test.CallGetEndpoint(t, Routes(), "/")
+	statusCode, body := test.CallGetEndpoint(t, Routes(&Config{}), "/")
 
 	expected := "Hello World\n"
 	test.VerifyStringResponse(t, statusCode, string(body), http.StatusOK, expected)

@@ -8,7 +8,7 @@ import (
 )
 
 func TestE2EV1GetRoot(t *testing.T) {
-	statusCode, body := test.CallGetEndpoint(t, Routes(), "/v1/")
+	statusCode, body := test.CallGetEndpoint(t, Routes(&Config{}), "/v1/")
 
 	expected := `{"status":"ONLINE"}
 `
