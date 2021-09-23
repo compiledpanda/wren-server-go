@@ -3,7 +3,7 @@ package server
 import "testing"
 
 func TestSetup(t *testing.T) {
-	srv := Setup(&Config{})
+	srv, _ := Setup(&Config{}) // TODO test error
 
 	// TODO #2 Test Configuration
 

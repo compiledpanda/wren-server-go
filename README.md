@@ -13,7 +13,8 @@ An Implementation of https://github.com/compiledpanda/wren/blob/main/server.yml
 ```
 Note: # prefix denotes a bucket
 
-metadata
+#repository
+  metadata
 #shard
   #<shard id>
     <commit id>: commit
