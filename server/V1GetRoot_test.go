@@ -12,5 +12,6 @@ func TestV1GetRoot(t *testing.T) {
 
 	expected := `{"status":"ONLINE"}
 `
+	test.VerifyHeader(t, rr.Result().Header.Get("Content-Type"), "application/json")
 	test.VerifyStringResponse(t, rr.Code, rr.Body.String(), http.StatusOK, expected)
 }

@@ -8,9 +8,10 @@ import (
 )
 
 func TestE2EMethodNotAllowed(t *testing.T) {
-	statusCode, body := test.CallGetEndpoint(t, Routes(), "/bogus")
+	statusCode, headers, body := test.CallGetEndpoint(t, Routes(&Config{}), "/bogus")
 
 	expected := `{"code":"METHOD_NOT_ALLOWED","description":"Method Not Allowed"}
 `
+	test.VerifyHeader(t, headers.Get("Content-Type"), "application/json")
 	test.VerifyStringResponse(t, statusCode, string(body), http.StatusMethodNotAllowed, expected)
 }

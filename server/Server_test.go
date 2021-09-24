@@ -3,7 +3,10 @@ package server
 import "testing"
 
 func TestSetup(t *testing.T) {
-	srv := Setup()
+	srv, err := Setup(&Config{})
+	if err != nil {
+		t.Errorf("Unexpected error returned from Setup: %v", err)
+	}
 
 	// TODO #2 Test Configuration
 

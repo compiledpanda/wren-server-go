@@ -11,10 +11,16 @@ import (
 )
 
 func main() {
-	// TODO #2 call config.Get() and pass in cfg object to server.Setup()
+	// TODO #2 Call config.Get() and pass in cfg object to server.Setup()
+	cfg := &server.Config{}
 
 	// Setup our Server
-	srv := server.Setup()
+	srv, err := server.Setup(cfg)
+	// Make sure we close our database
+	defer cfg.DB.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Run our server in a goroutine so that it doesn't block.
 	go func() {
