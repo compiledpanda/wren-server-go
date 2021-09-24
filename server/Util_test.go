@@ -48,7 +48,7 @@ func TestReturnBytes(t *testing.T) {
 		t.Errorf("handler returned wrong Content-Type: got %v", contentType)
 	}
 
-	if bytes.Compare(rr.Body.Bytes(), expected) != 0 {
+	if !bytes.Equal(rr.Body.Bytes(), expected) {
 		t.Errorf("handler returned unexpected body: got %v want %v",
 			rr.Body.String(), string(expected))
 	}
