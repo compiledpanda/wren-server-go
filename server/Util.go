@@ -37,6 +37,7 @@ func ReturnBytes(w http.ResponseWriter, statusCode int, b []byte) {
 
 	// Write body
 	_, err = w.Write(b)
+	// If we error there isn't really anything we can do, so just log the error internally
 	if err != nil {
 		log.Printf("Unable to write response: %v", err)
 	}
