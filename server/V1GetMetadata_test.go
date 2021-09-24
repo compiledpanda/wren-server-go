@@ -27,8 +27,8 @@ func TestV1GetMetadata(t *testing.T) {
 		rr := test.CallHandler(t, V1GetMetadata(&Config{DB: db}), "GET", "/v1/metadata", nil)
 		db.Close()
 
+		test.VerifyHeader(t, rr.Result().Header.Get("Content-Type"), "application/octet-stream")
+		test.VerifyDigestHeader(t, rr.Result().Header.Get("Digest"), tc.value)
 		test.VerifyStringResponse(t, rr.Code, rr.Body.String(), http.StatusOK, string(tc.value))
-		test.VerifyHeader(t, rr.HeaderMap.Get("Content-Type"), "application/octet-stream")
-		test.VerifyDigestHeader(t, rr.HeaderMap.Get("Digest"), tc.value)
 	}
 }
