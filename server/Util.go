@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -21,14 +22,22 @@ func ReturnJSON(w http.ResponseWriter, statusCode int, v interface{}) {
 }
 
 func ReturnBytes(w http.ResponseWriter, statusCode int, b []byte) {
-	w.Header().Set("Content-Type", "application/octet-stream")
-	// Calculate and set Digest
-	// TODO handle errors
+	// Calculate the hash
 	hasher := sha256.New()
-	hasher.Write(b)
+	_, err := hasher.Write(b)
+	if err != nil {
+		ReturnJSON(w, http.StatusInternalServerError, Error{"INTERNAL_ERROR", "Unable to calculate digest"})
+	}
 	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+
+	// Set Headers
+	w.Header().Set("Content-Type", "application/octet-stream")
 	w.Header().Set("Digest", "sha-256="+hash)
 	w.WriteHeader(statusCode)
 
-	_, _ = w.Write(b) // TODO handle errors
+	// Write body
+	_, err = w.Write(b)
+	if err != nil {
+		log.Printf("Unable to write response: %v", err)
+	}
 }
