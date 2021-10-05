@@ -9,18 +9,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func Routes(cfg *Config) *mux.Router {
+func routes(cfg *Config) *mux.Router {
 	// Create Router
 	r := mux.NewRouter()
 
 	// Add Routes
-	r.HandleFunc("/", Root).Methods("GET")
-	r.HandleFunc("/v1/", V1GetRoot).Methods("GET")
-	r.HandleFunc("/v1/metadata", V1GetMetadata(cfg)).Methods("GET")
+	r.HandleFunc("/", getRoot).Methods("GET")
+	r.HandleFunc("/v1/", v1GetRoot).Methods("GET")
+	r.HandleFunc("/v1/metadata", v1GetMetadata(cfg)).Methods("GET")
 
 	// All unmatched routes should result in a 405 Method Not Allowed
-	r.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
-	r.NotFoundHandler = http.HandlerFunc(MethodNotAllowed)
+	r.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowed)
+	r.NotFoundHandler = http.HandlerFunc(methodNotAllowed)
 
 	return r
 }
@@ -53,7 +53,7 @@ func Setup(cfg *Config) (srv *http.Server, err error) {
 		ReadTimeout:  time.Second * 15,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout:  time.Second * 60,
-		Handler:      Routes(cfg),
+		Handler:      routes(cfg),
 	}
 
 	return

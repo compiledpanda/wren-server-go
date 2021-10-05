@@ -8,7 +8,7 @@ import (
 )
 
 func TestRoot(t *testing.T) {
-	rr := test.CallHandler(t, Root, "GET", "/v1/", nil)
+	rr := test.CallHandler(t, getRoot, "GET", "/v1/", nil)
 
 	expected := "Hello World\n"
 	test.VerifyStringResponse(t, rr.Code, rr.Body.String(), http.StatusOK, expected)

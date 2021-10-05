@@ -8,7 +8,7 @@ import (
 )
 
 func TestE2EMethodNotAllowed(t *testing.T) {
-	statusCode, headers, body := test.CallGetEndpoint(t, Routes(&Config{}), "/bogus")
+	statusCode, headers, body := test.CallGetEndpoint(t, routes(&Config{}), "/bogus")
 
 	expected := `{"code":"METHOD_NOT_ALLOWED","description":"Method Not Allowed"}
 `

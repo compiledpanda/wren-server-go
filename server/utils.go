@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func ReturnJSON(w http.ResponseWriter, statusCode int, v interface{}) {
+func returnJSON(w http.ResponseWriter, statusCode int, v interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
@@ -21,12 +21,12 @@ func ReturnJSON(w http.ResponseWriter, statusCode int, v interface{}) {
 	_ = enc.Encode(v)
 }
 
-func ReturnBytes(w http.ResponseWriter, statusCode int, b []byte) {
+func returnBytes(w http.ResponseWriter, statusCode int, b []byte) {
 	// Calculate the hash
 	hasher := sha256.New()
 	_, err := hasher.Write(b)
 	if err != nil {
-		ReturnJSON(w, http.StatusInternalServerError, Error{"INTERNAL_ERROR", "Unable to calculate digest"})
+		returnJSON(w, http.StatusInternalServerError, serverError{"INTERNAL_ERROR", "Unable to calculate digest"})
 	}
 	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 

@@ -9,6 +9,15 @@ import (
 	"github.com/compiledpanda/wren-server-go/test"
 )
 
+func TestV1GetRoot(t *testing.T) {
+	rr := test.CallHandler(t, v1GetRoot, "GET", "/v1/", nil)
+
+	expected := `{"status":"ONLINE"}
+`
+	test.VerifyHeader(t, rr.Result().Header.Get("Content-Type"), "application/json")
+	test.VerifyStringResponse(t, rr.Code, rr.Body.String(), http.StatusOK, expected)
+}
+
 func TestV1GetMetadata(t *testing.T) {
 	tt := []struct {
 		file  string
@@ -24,7 +33,7 @@ func TestV1GetMetadata(t *testing.T) {
 			db.Close()
 			t.Errorf("DB Open Error: %v", err)
 		}
-		rr := test.CallHandler(t, V1GetMetadata(&Config{DB: db}), "GET", "/v1/metadata", nil)
+		rr := test.CallHandler(t, v1GetMetadata(&Config{DB: db}), "GET", "/v1/metadata", nil)
 		db.Close()
 
 		test.VerifyHeader(t, rr.Result().Header.Get("Content-Type"), "application/octet-stream")
