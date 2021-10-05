@@ -4,8 +4,10 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+	"strings"
 )
 
 func returnJSON(w http.ResponseWriter, statusCode int, v interface{}) {
@@ -41,4 +43,19 @@ func returnBytes(w http.ResponseWriter, statusCode int, b []byte) {
 	if err != nil {
 		log.Printf("Unable to write response: %v", err)
 	}
+}
+
+func parseDigestHeader(digest string) (sha string, err error) {
+	parts := strings.Split(strings.TrimSpace(digest), "=")
+	if len(parts) != 2 {
+		return "", errors.New("Too many parts")
+	}
+	// TODO ignore case
+	if parts[0] != "sha-256" {
+		return "", errors.New("Too many parts")
+	}
+	// TODO validate sha value
+
+	sha = parts[1]
+	return
 }

@@ -40,3 +40,14 @@ func v1GetMetadata(cfg *Config) func(w http.ResponseWriter, r *http.Request) {
 		returnBytes(w, http.StatusOK, metadata)
 	}
 }
+
+// PUT /v1/metadata
+func v1PutMetadata(cfg *Config) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		digest := r.Header.Get("Digest")
+
+		if digest == "" {
+			returnJSON(w, http.StatusBadRequest, serverError{"MISSING_DIGEST_HEADER", "Digest header not found"})
+		}
+	}
+}
