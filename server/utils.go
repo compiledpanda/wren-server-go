@@ -25,12 +25,12 @@ func returnJSON(w http.ResponseWriter, statusCode int, v interface{}) {
 
 func returnBytes(w http.ResponseWriter, statusCode int, b []byte) {
 	// Calculate the hash
-	hasher := sha256.New()
-	_, err := hasher.Write(b)
+	hash, err := calculateSHA256(b)
 	if err != nil {
+		// TODO log error
 		returnJSON(w, http.StatusInternalServerError, serverError{"INTERNAL_ERROR", "Unable to calculate digest"})
+		return
 	}
-	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 
 	// Set Headers
 	w.Header().Set("Content-Type", "application/octet-stream")
@@ -45,17 +45,33 @@ func returnBytes(w http.ResponseWriter, statusCode int, b []byte) {
 	}
 }
 
-func parseDigestHeader(digest string) (sha string, err error) {
-	parts := strings.Split(strings.TrimSpace(digest), "=")
-	if len(parts) != 2 {
-		return "", errors.New("Too many parts")
-	}
-	// TODO ignore case
-	if parts[0] != "sha-256" {
-		return "", errors.New("Too many parts")
-	}
-	// TODO validate sha value
+func returnEmpty(w http.ResponseWriter, statusCode int) {
+	w.WriteHeader(statusCode)
+}
 
-	sha = parts[1]
+// Return the Base64 URL encoded (RFC 4648) SHA-256 hash
+func calculateSHA256(b []byte) (hash string, err error) {
+	hasher := sha256.New()
+	_, err = hasher.Write(b)
+	if err != nil {
+		return
+	}
+	hash = base64.URLEncoding.EncodeToString(hasher.Sum(nil))
 	return
+}
+
+func parseDigestHeader(digest string) (sha string, err error) {
+	// Split into multiple parts
+	parts := strings.Split(strings.TrimSpace(digest), ",")
+
+	// Ensure we have 1 digest pair, and that it is sha-256
+	if len(parts) != 1 {
+		return "", errors.New("too many parts")
+	}
+	if !strings.HasPrefix(parts[0], "sha-256=") {
+		return "", errors.New("not sha-256")
+	}
+
+	// Return just the base64 encoded value (strip off psha-256= prefix)
+	return parts[0][8:], nil
 }
