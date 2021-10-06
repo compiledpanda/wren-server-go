@@ -1,9 +1,9 @@
 package test
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -13,8 +13,11 @@ import (
 )
 
 /** Test Utilities **/
-func CallHandler(t *testing.T, handler func(http.ResponseWriter, *http.Request), method string, url string, body io.Reader) *httptest.ResponseRecorder {
-	req, err := http.NewRequest(method, url, body)
+func CallHandler(t *testing.T, handler func(http.ResponseWriter, *http.Request), method string, url string, headers map[string]string, body []byte) *httptest.ResponseRecorder {
+	req, err := http.NewRequest(method, url, bytes.NewReader(body))
+	for k, v := range headers {
+		req.Header.Add(k, v)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -46,6 +46,7 @@ func returnBytes(w http.ResponseWriter, statusCode int, b []byte) {
 }
 
 func returnEmpty(w http.ResponseWriter, statusCode int) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 }
 

@@ -19,7 +19,7 @@ func TestError(t *testing.T) {
 }
 
 func TestMethodNotAllowed(t *testing.T) {
-	rr := test.CallHandler(t, methodNotAllowed, "GET", "/", nil)
+	rr := test.CallHandler(t, methodNotAllowed, "GET", "/", nil, nil)
 
 	expected := `{"code":"METHOD_NOT_ALLOWED","description":"Method Not Allowed"}
 `
