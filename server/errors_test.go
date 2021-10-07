@@ -21,8 +21,5 @@ func TestError(t *testing.T) {
 func TestMethodNotAllowed(t *testing.T) {
 	rr := test.CallHandler(t, methodNotAllowed, "GET", "/", nil, nil)
 
-	expected := `{"code":"METHOD_NOT_ALLOWED","description":"Method Not Allowed"}
-`
-	test.VerifyHeader(t, rr.Result().Header.Get("Content-Type"), "application/json")
-	test.VerifyStringResponse(t, rr.Code, rr.Body.String(), http.StatusMethodNotAllowed, expected)
+	test.VerifyErrorResponse(t, rr, http.StatusMethodNotAllowed, "METHOD_NOT_ALLOWED")
 }

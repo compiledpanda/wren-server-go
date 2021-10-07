@@ -10,12 +10,11 @@ import (
 )
 
 func TestE2EV1GetRoot(t *testing.T) {
-	statusCode, headers, body := test.CallGetEndpoint(t, routes(&Config{}), "/v1/")
+	res := test.CallGetEndpoint(t, routes(&Config{}), "/v1/")
 
 	expected := `{"status":"ONLINE"}
 `
-	test.VerifyHeader(t, headers.Get("Content-Type"), "application/json")
-	test.VerifyStringResponse(t, statusCode, string(body), http.StatusOK, expected)
+	test.VerifyJSONResponse(t, res, http.StatusOK, expected)
 }
 
 func TestE2EV1GetMetadata(t *testing.T) {
@@ -24,10 +23,8 @@ func TestE2EV1GetMetadata(t *testing.T) {
 		t.Fatalf("DB Open Error: %v", err)
 	}
 	defer db.Close()
-	statusCode, headers, body := test.CallGetEndpoint(t, routes(&Config{DB: db}), "/v1/metadata")
+	res := test.CallGetEndpoint(t, routes(&Config{DB: db}), "/v1/metadata")
 
-	expected := "Some Bytes!"
-	test.VerifyHeader(t, headers.Get("Content-Type"), "application/octet-stream")
-	test.VerifyDigestHeader(t, headers.Get("Digest"), []byte("Some Bytes!"))
-	test.VerifyStringResponse(t, statusCode, string(body), http.StatusOK, expected)
+	expected := []byte("Some Bytes!")
+	test.VerifyByteResponse(t, res, http.StatusOK, expected)
 }

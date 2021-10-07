@@ -31,19 +31,7 @@ func CallHandler(t *testing.T, handler func(http.ResponseWriter, *http.Request),
 	return rr
 }
 
-func VerifyStringResponse(t *testing.T, expectedStatusCode int, expectedBody string, statusCode int, body string) {
-	if expectedStatusCode != statusCode {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			expectedStatusCode, statusCode)
-	}
-
-	if expectedBody != body {
-		t.Errorf("handler returned unexpected body: got %v want %v",
-			expectedBody, body)
-	}
-}
-
-func CallGetEndpoint(t *testing.T, router *mux.Router, url string) (statusCode int, headers http.Header, body []byte) {
+func CallGetEndpoint(t *testing.T, router *mux.Router, url string) *http.Response {
 	ts := httptest.NewServer(router)
 	defer ts.Close()
 
@@ -51,43 +39,153 @@ func CallGetEndpoint(t *testing.T, router *mux.Router, url string) (statusCode i
 	if err != nil {
 		t.Fatal(err)
 	}
-	statusCode = res.StatusCode
-	headers = res.Header
+	return res
+}
 
-	body, err = ioutil.ReadAll(res.Body)
+func VerifyStringResponse(t *testing.T, res *http.Response, status int, body string) {
+	if res.StatusCode != status {
+		t.Errorf("Status code does not match: got %v want %v",
+			res.StatusCode, status)
+	}
+
+	contentType := res.Header.Get("Content-Type")
+	if contentType != "text/plain" {
+		t.Error("Content Type is not text/plain")
+	}
+
+	actualBody, err := ioutil.ReadAll(res.Body)
 	res.Body.Close()
 
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	return
-}
-
-func VerifyHeader(t *testing.T, header string, expectedHeader string) {
-	if header != expectedHeader {
-		t.Errorf("Header does not match: got %v want %v",
-			header, expectedHeader)
+	if string(actualBody) != body {
+		t.Errorf("Body does not match: got %v want %v", string(actualBody), body)
 	}
 }
 
-func VerifyDigestHeader(t *testing.T, header string, expectedContents []byte) {
-	// Calculate the hash
+func VerifyJSONResponse(t *testing.T, res *http.Response, status int, body string) {
+	if res.StatusCode != status {
+		t.Errorf("Status code does not match: got %v want %v",
+			res.StatusCode, status)
+	}
+
+	contentType := res.Header.Get("Content-Type")
+	if contentType != "application/json" {
+		t.Error("Content Type is not application/json")
+	}
+
+	actualBody, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(actualBody) != body {
+		t.Errorf("Body does not match: got %v want %v", string(actualBody), body)
+	}
+}
+
+func VerifyByteResponse(t *testing.T, res *http.Response, status int, body []byte) {
+	if res.StatusCode != status {
+		t.Errorf("Status code does not match: got %v want %v",
+			res.StatusCode, status)
+	}
+
+	contentType := res.Header.Get("Content-Type")
+	if contentType != "application/octet-stream" {
+		t.Error("Content Type is not application/octet-stream")
+	}
+
+	digest := res.Header.Get("Digest")
 	hasher := sha256.New()
-	_, err := hasher.Write(expectedContents)
+	_, err := hasher.Write(body)
 	if err != nil {
 		t.Fatal(err)
 	}
 	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
-	expectedHeader := "sha-256=" + hash
+	expectedDigest := "sha-256=" + hash
 
-	if header != expectedHeader {
-		t.Errorf("Digest does not match: got %v want %v",
-			header, expectedHeader)
+	if digest != expectedDigest {
+		t.Errorf("Digest does not match: got %v want %v", digest, expectedDigest)
+	}
+
+	actualBody, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(actualBody, body) {
+		t.Errorf("Body does not match: got %v want %v", actualBody, body)
 	}
 }
 
-func VerifyError(t *testing.T, rr *httptest.ResponseRecorder, status int, code string) {
+func VerifyRecordedStringResponse(t *testing.T, rr *httptest.ResponseRecorder, status int, body string) {
+	if rr.Code != status {
+		t.Errorf("Status code does not match: got %v want %v",
+			rr.Code, status)
+	}
+
+	contentType := rr.Result().Header.Get("Content-Type")
+	if contentType != "text/plain" {
+		t.Error("Content Type is not text/plain")
+	}
+
+	actualBody := rr.Body.String()
+	if actualBody != body {
+		t.Errorf("Body does not match: got %v want %v", actualBody, body)
+	}
+}
+
+func VerifyRecordedJSONResponse(t *testing.T, rr *httptest.ResponseRecorder, status int, body string) {
+	if rr.Code != status {
+		t.Errorf("Status code does not match: got %v want %v",
+			rr.Code, status)
+	}
+
+	contentType := rr.Result().Header.Get("Content-Type")
+	if contentType != "application/json" {
+		t.Error("Content Type is not application/json")
+	}
+
+	actualBody := rr.Body.String()
+	if actualBody != body {
+		t.Errorf("Body does not match: got %v want %v", actualBody, body)
+	}
+}
+
+func VerifyRecordedByteResponse(t *testing.T, rr *httptest.ResponseRecorder, status int, body []byte) {
+	if rr.Code != status {
+		t.Errorf("Status code does not match: got %v want %v",
+			rr.Code, status)
+	}
+
+	contentType := rr.Result().Header.Get("Content-Type")
+	if contentType != "application/octet-stream" {
+		t.Error("Content Type is not application/octet-stream")
+	}
+
+	digest := rr.Result().Header.Get("Digest")
+	hasher := sha256.New()
+	_, err := hasher.Write(body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	expectedDigest := "sha-256=" + hash
+
+	if digest != expectedDigest {
+		t.Errorf("Digest does not match: got %v want %v", digest, expectedDigest)
+	}
+
+	actualBody := rr.Body.Bytes()
+	if !bytes.Equal(actualBody, body) {
+		t.Errorf("Body does not match: got %v want %v", actualBody, body)
+	}
+}
+
+func VerifyErrorResponse(t *testing.T, rr *httptest.ResponseRecorder, status int, code string) {
 	type serverError struct {
 		Code        string `json:"code"`
 		Description string `json:"description"`
@@ -96,6 +194,11 @@ func VerifyError(t *testing.T, rr *httptest.ResponseRecorder, status int, code s
 	if rr.Code != status {
 		t.Errorf("Status code does not match: got %v want %v",
 			rr.Code, status)
+	}
+
+	contentType := rr.Result().Header.Get("Content-Type")
+	if contentType != "application/json" {
+		t.Error("Content Type is not application/json")
 	}
 
 	var e serverError

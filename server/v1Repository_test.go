@@ -14,8 +14,7 @@ func TestV1GetRoot(t *testing.T) {
 
 	expected := `{"status":"ONLINE"}
 `
-	test.VerifyHeader(t, rr.Result().Header.Get("Content-Type"), "application/json")
-	test.VerifyStringResponse(t, rr.Code, rr.Body.String(), http.StatusOK, expected)
+	test.VerifyRecordedJSONResponse(t, rr, http.StatusOK, expected)
 }
 
 func TestV1GetMetadata(t *testing.T) {
@@ -36,9 +35,7 @@ func TestV1GetMetadata(t *testing.T) {
 		rr := test.CallHandler(t, v1GetMetadata(&Config{DB: db}), "GET", "/v1/metadata", nil, nil)
 		db.Close()
 
-		test.VerifyHeader(t, rr.Result().Header.Get("Content-Type"), "application/octet-stream")
-		test.VerifyDigestHeader(t, rr.Result().Header.Get("Digest"), tc.value)
-		test.VerifyStringResponse(t, rr.Code, rr.Body.String(), http.StatusOK, string(tc.value))
+		test.VerifyRecordedByteResponse(t, rr, http.StatusOK, tc.value)
 	}
 }
 
@@ -71,7 +68,7 @@ func TestV1PutMetadata(t *testing.T) {
 				t.Error("Body is not empty")
 			}
 		} else {
-			test.VerifyError(t, rr, tc.status, tc.code)
+			test.VerifyErrorResponse(t, rr, tc.status, tc.code)
 		}
 	}
 }
