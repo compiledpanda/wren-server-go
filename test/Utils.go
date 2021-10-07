@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -83,5 +84,33 @@ func VerifyDigestHeader(t *testing.T, header string, expectedContents []byte) {
 	if header != expectedHeader {
 		t.Errorf("Digest does not match: got %v want %v",
 			header, expectedHeader)
+	}
+}
+
+func VerifyError(t *testing.T, rr *httptest.ResponseRecorder, status int, code string) {
+	type serverError struct {
+		Code        string `json:"code"`
+		Description string `json:"description"`
+	}
+
+	if rr.Code != status {
+		t.Errorf("Status code does not match: got %v want %v",
+			rr.Code, status)
+	}
+
+	var e serverError
+	err := json.Unmarshal(rr.Body.Bytes(), &e)
+
+	if err != nil {
+		t.Errorf("Unable to unmarshal result: %v", err)
+	}
+
+	if e.Code != code {
+		t.Errorf("Error code does not match: got %v want %v",
+			e.Code, code)
+	}
+
+	if e.Description == "" {
+		t.Error("Error description is empty")
 	}
 }

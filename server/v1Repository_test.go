@@ -50,7 +50,11 @@ func TestV1PutMetadata(t *testing.T) {
 		code    string
 	}{
 		{nil, []byte(""), http.StatusBadRequest, "MISSING_DIGEST_HEADER"},
-		// {map[string]string{"Digest": "sha-256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU="}, []byte(""), http.StatusCreated, ""},
+		{map[string]string{"Digest": "sha-256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU=,sha-256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU="}, []byte(""), http.StatusBadRequest, "MALFORMED_DIGEST_HEADER"},
+		{map[string]string{"Digest": "sha-512=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU="}, []byte(""), http.StatusBadRequest, "MALFORMED_DIGEST_HEADER"},
+		{map[string]string{"Digest": "sha-256=57DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU="}, []byte(""), http.StatusBadRequest, "DIGEST_BODY_MISMATCH"},
+		{map[string]string{"Digest": "sha-256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU="}, []byte(""), http.StatusCreated, ""},
+		{map[string]string{"Digest": "sha-256=XnxAAXcb7O-PWjwDgip9txg-lJbbyxKaiO04DTUC9ko="}, []byte("metadata!"), http.StatusCreated, ""},
 	}
 
 	for _, tc := range tt {
@@ -61,7 +65,13 @@ func TestV1PutMetadata(t *testing.T) {
 		}
 		rr := test.CallHandler(t, v1PutMetadata(&Config{DB: db}), "PUT", "/v1/metadata", tc.headers, tc.body)
 		db.Close()
-		t.Logf("%d %s", rr.Code, rr.Body.String())
-		// test.VerifyError(t, rr.Code, rr.Body.Bytes(), tc.status, tc.code)
+
+		if rr.Code == http.StatusCreated {
+			if rr.Body.Len() != 0 {
+				t.Error("Body is not empty")
+			}
+		} else {
+			test.VerifyError(t, rr, tc.status, tc.code)
+		}
 	}
 }

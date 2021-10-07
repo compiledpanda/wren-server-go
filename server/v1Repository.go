@@ -26,21 +26,21 @@ func v1GetMetadata(cfg *Config) func(w http.ResponseWriter, r *http.Request) {
 		// TODO #15 Authenticate
 		// TODO #16 Authorize
 
+		// Get metadata
 		var metadata []byte
-		// Start a read-only transaction
 		err := cfg.DB.View(func(tx *bolt.Tx) error {
 			// Get metadata (or nil if it does not exist)
 			b := tx.Bucket([]byte(REPOSITORY))
 			metadata = b.Get([]byte(REPOSITORY_METADATA))
 			return nil
 		})
-
 		if err != nil {
 			// TODO #18 log error
 			returnJSON(w, http.StatusInternalServerError, serverError{"INTERNAL_ERROR", "Unable to retrieve metadata"})
 			return
 		}
 
+		// Return 200
 		returnBytes(w, http.StatusOK, metadata)
 	}
 }
