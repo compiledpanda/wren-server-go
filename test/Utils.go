@@ -42,6 +42,24 @@ func CallGetEndpoint(t *testing.T, router *mux.Router, url string) *http.Respons
 	return res
 }
 
+func CallPutBytesEndpoint(t *testing.T, router *mux.Router, url string, body []byte) *http.Response {
+	ts := httptest.NewServer(router)
+	defer ts.Close()
+
+	req, err := http.NewRequest(http.MethodPut, ts.URL+url, bytes.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/octet-stream")
+	req.Header.Set("Digest", calculateDigest(t, body))
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return res
+}
+
 func VerifyStringResponse(t *testing.T, res *http.Response, status int, body string) {
 	if res.StatusCode != status {
 		t.Errorf("Status code does not match: got %v want %v",
@@ -98,13 +116,7 @@ func VerifyByteResponse(t *testing.T, res *http.Response, status int, body []byt
 	}
 
 	digest := res.Header.Get("Digest")
-	hasher := sha256.New()
-	_, err := hasher.Write(body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
-	expectedDigest := "sha-256=" + hash
+	expectedDigest := calculateDigest(t, body)
 
 	if digest != expectedDigest {
 		t.Errorf("Digest does not match: got %v want %v", digest, expectedDigest)
@@ -167,13 +179,7 @@ func VerifyRecordedByteResponse(t *testing.T, rr *httptest.ResponseRecorder, sta
 	}
 
 	digest := rr.Result().Header.Get("Digest")
-	hasher := sha256.New()
-	_, err := hasher.Write(body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
-	expectedDigest := "sha-256=" + hash
+	expectedDigest := calculateDigest(t, body)
 
 	if digest != expectedDigest {
 		t.Errorf("Digest does not match: got %v want %v", digest, expectedDigest)
@@ -216,4 +222,16 @@ func VerifyErrorResponse(t *testing.T, rr *httptest.ResponseRecorder, status int
 	if e.Description == "" {
 		t.Error("Error description is empty")
 	}
+}
+
+/** Internal Helpers **/
+func calculateDigest(t *testing.T, body []byte) (digest string) {
+	hasher := sha256.New()
+	_, err := hasher.Write(body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	hash := base64.URLEncoding.EncodeToString(hasher.Sum(nil))
+	digest = "sha-256=" + hash
+	return
 }

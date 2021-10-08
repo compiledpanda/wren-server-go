@@ -37,3 +37,30 @@ func TestE2EV1GetMetadata(t *testing.T) {
 
 	test.VerifyByteResponse(t, res, http.StatusOK, expected)
 }
+
+func TestE2EV1PutMetadata(t *testing.T) {
+	db, err := openDB("../test_data/TestE2EV1PutMetadata.db")
+	if err != nil {
+		db.Close()
+		t.Fatalf("DB Open Error: %v", err)
+	}
+	defer db.Close()
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(REPOSITORY))
+		return b.Delete([]byte(REPOSITORY_METADATA))
+	})
+	if err != nil {
+		t.Fatalf("DB Put Error: %v", err)
+	}
+
+	expected := []byte("Some Bytes!")
+
+	res := test.CallGetEndpoint(t, routes(&Config{DB: db}), "/v1/metadata")
+	test.VerifyByteResponse(t, res, http.StatusOK, nil)
+
+	res = test.CallPutBytesEndpoint(t, routes(&Config{DB: db}), "/v1/metadata", expected)
+	test.VerifyJSONResponse(t, res, http.StatusCreated, "")
+
+	res = test.CallGetEndpoint(t, routes(&Config{DB: db}), "/v1/metadata")
+	test.VerifyByteResponse(t, res, http.StatusOK, expected)
+}
