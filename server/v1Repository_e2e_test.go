@@ -3,7 +3,6 @@ package server
 import (
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/boltdb/bolt"
 	"github.com/compiledpanda/wren-server-go/test"
@@ -18,13 +17,23 @@ func TestE2EV1GetRoot(t *testing.T) {
 }
 
 func TestE2EV1GetMetadata(t *testing.T) {
-	db, err := bolt.Open("../test_data/v1_get_metadata_value.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	db, err := openDB("../test_data/TestE2EV1GetMetadata.db")
 	if err != nil {
+		db.Close()
 		t.Fatalf("DB Open Error: %v", err)
 	}
 	defer db.Close()
-	res := test.CallGetEndpoint(t, routes(&Config{DB: db}), "/v1/metadata")
 
 	expected := []byte("Some Bytes!")
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(REPOSITORY))
+		return b.Put([]byte(REPOSITORY_METADATA), expected)
+	})
+	if err != nil {
+		t.Fatalf("DB Put Error: %v", err)
+	}
+
+	res := test.CallGetEndpoint(t, routes(&Config{DB: db}), "/v1/metadata")
+
 	test.VerifyByteResponse(t, res, http.StatusOK, expected)
 }
