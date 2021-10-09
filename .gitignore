@@ -21,3 +21,4 @@
 wren-server-go
 wren.db
 server/*.db
+test_data/*.db
