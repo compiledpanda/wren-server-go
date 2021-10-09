@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/boltdb/bolt"
+	"github.com/rs/zerolog/log"
 )
 
 const REPOSITORY = "repository"
@@ -35,7 +36,7 @@ func v1GetMetadata(cfg *Config) func(w http.ResponseWriter, r *http.Request) {
 			return nil
 		})
 		if err != nil {
-			// TODO #18 log error
+			log.Error().Stack().Err(err).Msg("Unable to retrieve metadata")
 			returnJSON(w, http.StatusInternalServerError, serverError{"INTERNAL_ERROR", "Unable to retrieve metadata"})
 			return
 		}
@@ -68,13 +69,13 @@ func v1PutMetadata(cfg *Config) func(w http.ResponseWriter, r *http.Request) {
 		// Ensure body matches digest
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			// TODO #18 log error
+			log.Error().Stack().Err(err).Msg("Unable to read body")
 			returnJSON(w, http.StatusInternalServerError, serverError{"INTERNAL_ERROR", "Unable to read body"})
 			return
 		}
 		hash, err := calculateSHA256(body)
 		if err != nil {
-			// TODO #18 log error
+			log.Error().Stack().Err(err).Msg("Unable to calculate digest")
 			returnJSON(w, http.StatusInternalServerError, serverError{"INTERNAL_ERROR", "Unable to calculate digest"})
 			return
 		}
@@ -90,7 +91,7 @@ func v1PutMetadata(cfg *Config) func(w http.ResponseWriter, r *http.Request) {
 			return b.Put([]byte(REPOSITORY_METADATA), body)
 		})
 		if err != nil {
-			// TODO #18 log error
+			log.Error().Stack().Err(err).Msg("Unable to save metadata")
 			returnJSON(w, http.StatusInternalServerError, serverError{"INTERNAL_ERROR", "Unable to save metadata"})
 			return
 		}

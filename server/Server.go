@@ -7,11 +7,22 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/gorilla/mux"
+	"github.com/rs/zerolog/log"
 )
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Info().Msgf("%s %s", r.Method, r.RequestURI)
+		next.ServeHTTP(w, r)
+	})
+}
 
 func routes(cfg *Config) *mux.Router {
 	// Create Router
 	r := mux.NewRouter()
+
+	// Log each request
+	r.Use(loggingMiddleware)
 
 	// Add Routes
 	r.HandleFunc("/", getRoot).Methods("GET")

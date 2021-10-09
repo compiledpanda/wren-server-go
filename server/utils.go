@@ -5,9 +5,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 func returnJSON(w http.ResponseWriter, statusCode int, v interface{}) {
@@ -20,15 +21,17 @@ func returnJSON(w http.ResponseWriter, statusCode int, v interface{}) {
 	// Save the bytes! (Disable indentation)
 	enc.SetIndent("", "")
 	// Explicitly ignore errors, since they can only be caused by trying to marshal unsupported types and values
-	// TODO # 18 log error
-	_ = enc.Encode(v)
+	err := enc.Encode(v)
+	if err != nil {
+		log.Error().Stack().Err(err).Msg("Unable to encode JSON")
+	}
 }
 
 func returnBytes(w http.ResponseWriter, statusCode int, b []byte) {
 	// Calculate the hash
 	hash, err := calculateSHA256(b)
 	if err != nil {
-		// TODO # 18 log error
+		log.Error().Stack().Err(err).Msg("Unable to calculate digest")
 		returnJSON(w, http.StatusInternalServerError, serverError{"INTERNAL_ERROR", "Unable to calculate digest"})
 		return
 	}
@@ -42,7 +45,7 @@ func returnBytes(w http.ResponseWriter, statusCode int, b []byte) {
 	_, err = w.Write(b)
 	// If we error there isn't really anything we can do, so just log the error internally
 	if err != nil {
-		log.Printf("Unable to write response: %v", err)
+		log.Error().Stack().Err(err).Msgf("Unable to write response: %v", err)
 	}
 }
 
