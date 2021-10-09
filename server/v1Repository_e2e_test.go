@@ -50,7 +50,7 @@ func TestE2EV1PutMetadata(t *testing.T) {
 		return b.Delete([]byte(REPOSITORY_METADATA))
 	})
 	if err != nil {
-		t.Fatalf("DB Put Error: %v", err)
+		t.Fatalf("DB Delete Error: %v", err)
 	}
 
 	expected := []byte("Some Bytes!")

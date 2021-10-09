@@ -53,3 +53,24 @@ func TestReturnBytes(t *testing.T) {
 			rr.Body.String(), string(expected))
 	}
 }
+
+func TestReturnEmpty(t *testing.T) {
+	rr := httptest.NewRecorder()
+
+	expected := []byte("")
+	returnEmpty(rr, http.StatusOK)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	if contentType := rr.Result().Header.Get("Content-Type"); contentType != "application/json" {
+		t.Errorf("handler returned wrong Content-Type: got %v", contentType)
+	}
+
+	if !bytes.Equal(rr.Body.Bytes(), expected) {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), string(expected))
+	}
+}

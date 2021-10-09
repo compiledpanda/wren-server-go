@@ -20,6 +20,7 @@ func returnJSON(w http.ResponseWriter, statusCode int, v interface{}) {
 	// Save the bytes! (Disable indentation)
 	enc.SetIndent("", "")
 	// Explicitly ignore errors, since they can only be caused by trying to marshal unsupported types and values
+	// TODO # 18 log error
 	_ = enc.Encode(v)
 }
 
@@ -27,7 +28,7 @@ func returnBytes(w http.ResponseWriter, statusCode int, b []byte) {
 	// Calculate the hash
 	hash, err := calculateSHA256(b)
 	if err != nil {
-		// TODO log error
+		// TODO # 18 log error
 		returnJSON(w, http.StatusInternalServerError, serverError{"INTERNAL_ERROR", "Unable to calculate digest"})
 		return
 	}
