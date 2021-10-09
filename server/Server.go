@@ -9,29 +9,30 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func Routes(cfg *Config) *mux.Router {
+func routes(cfg *Config) *mux.Router {
 	// Create Router
 	r := mux.NewRouter()
 
 	// Add Routes
-	r.HandleFunc("/", Root).Methods("GET")
-	r.HandleFunc("/v1/", V1GetRoot).Methods("GET")
-	r.HandleFunc("/v1/metadata", V1GetMetadata(cfg)).Methods("GET")
+	r.HandleFunc("/", getRoot).Methods("GET")
+	r.HandleFunc("/v1/", v1GetRoot).Methods("GET")
+	r.HandleFunc("/v1/metadata", v1GetMetadata(cfg)).Methods("GET")
+	r.HandleFunc("/v1/metadata", v1PutMetadata(cfg)).Methods("PUT")
 
 	// All unmatched routes should result in a 405 Method Not Allowed
-	r.MethodNotAllowedHandler = http.HandlerFunc(MethodNotAllowed)
-	r.NotFoundHandler = http.HandlerFunc(MethodNotAllowed)
+	r.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowed)
+	r.NotFoundHandler = http.HandlerFunc(methodNotAllowed)
 
 	return r
 }
 
-func Setup(cfg *Config) (srv *http.Server, err error) {
-	// Open & setup our Database
-	// TODO #2 Pull bolt db name and options from config
-	db, err := bolt.Open("wren.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+func openDB(path string) (db *bolt.DB, err error) {
+	db, err = bolt.Open(path, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return
 	}
+
+	// Ensure buckets exist
 	err = db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(REPOSITORY))
 		if err != nil {
@@ -39,6 +40,13 @@ func Setup(cfg *Config) (srv *http.Server, err error) {
 		}
 		return nil
 	})
+	return
+}
+
+func Setup(cfg *Config) (srv *http.Server, err error) {
+	// Open & setup our Database
+	// TODO #2 Pull bolt db name and options from config
+	db, err := openDB("wren.db")
 	if err != nil {
 		return
 	}
@@ -53,7 +61,7 @@ func Setup(cfg *Config) (srv *http.Server, err error) {
 		ReadTimeout:  time.Second * 15,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout:  time.Second * 60,
-		Handler:      Routes(cfg),
+		Handler:      routes(cfg),
 	}
 
 	return

@@ -20,3 +20,4 @@
 # Wren specific
 wren-server-go
 wren.db
+server/*.db

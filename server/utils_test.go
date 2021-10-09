@@ -14,7 +14,7 @@ func TestReturnJSON(t *testing.T) {
 	}
 	rr := httptest.NewRecorder()
 
-	ReturnJSON(rr, http.StatusOK, exampleStruct{"<>", false})
+	returnJSON(rr, http.StatusOK, exampleStruct{"<>", false})
 
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
@@ -37,7 +37,7 @@ func TestReturnBytes(t *testing.T) {
 	rr := httptest.NewRecorder()
 
 	expected := []byte("Some Bytes!")
-	ReturnBytes(rr, http.StatusOK, expected)
+	returnBytes(rr, http.StatusOK, expected)
 
 	if status := rr.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
@@ -45,6 +45,27 @@ func TestReturnBytes(t *testing.T) {
 	}
 
 	if contentType := rr.Result().Header.Get("Content-Type"); contentType != "application/octet-stream" {
+		t.Errorf("handler returned wrong Content-Type: got %v", contentType)
+	}
+
+	if !bytes.Equal(rr.Body.Bytes(), expected) {
+		t.Errorf("handler returned unexpected body: got %v want %v",
+			rr.Body.String(), string(expected))
+	}
+}
+
+func TestReturnEmpty(t *testing.T) {
+	rr := httptest.NewRecorder()
+
+	expected := []byte("")
+	returnEmpty(rr, http.StatusOK)
+
+	if status := rr.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+
+	if contentType := rr.Result().Header.Get("Content-Type"); contentType != "application/json" {
 		t.Errorf("handler returned wrong Content-Type: got %v", contentType)
 	}
 
