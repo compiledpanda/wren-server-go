@@ -47,7 +47,15 @@ func openDB(path string) (db *bolt.DB, err error) {
 	err = db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(REPOSITORY))
 		if err != nil {
-			return fmt.Errorf("could not create repository bucket: %v", err)
+			return fmt.Errorf("could not create %s bucket: %v", REPOSITORY, err)
+		}
+		_, err = tx.CreateBucketIfNotExists([]byte(USER))
+		if err != nil {
+			return fmt.Errorf("could not create %s bucket: %v", USER, err)
+		}
+		_, err = tx.CreateBucketIfNotExists([]byte(USER_KEY))
+		if err != nil {
+			return fmt.Errorf("could not create %s bucket: %v", USER_KEY, err)
 		}
 		return nil
 	})

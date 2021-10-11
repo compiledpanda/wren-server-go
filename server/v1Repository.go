@@ -24,7 +24,11 @@ func v1GetRoot(w http.ResponseWriter, r *http.Request) {
 // GET /v1/metadata
 func v1GetMetadata(cfg *Config) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO #15 Authenticate
+		// Authenticate
+		_, e := authenticate(r, cfg)
+		if (e != serverError{}) {
+			returnJSON(w, http.StatusUnauthorized, e)
+		}
 		// TODO #16 Authorize
 
 		// Get metadata
@@ -49,7 +53,11 @@ func v1GetMetadata(cfg *Config) func(w http.ResponseWriter, r *http.Request) {
 // PUT /v1/metadata
 func v1PutMetadata(cfg *Config) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO #15 Authenticate
+		// Authenticate
+		_, e := authenticate(r, cfg)
+		if (e != serverError{}) {
+			returnJSON(w, http.StatusUnauthorized, e)
+		}
 		// TODO #16 Authorize
 
 		// Ensure Digest header is set

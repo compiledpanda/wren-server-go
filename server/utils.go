@@ -77,6 +77,6 @@ func parseDigestHeader(digest string) (sha string, err error) {
 		return "", errors.New("not sha-256")
 	}
 
-	// Return just the base64 encoded value (strip off psha-256= prefix)
+	// Return just the base64 encoded value (strip off sha-256= prefix)
 	return parts[0][8:], nil
 }
