@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	jwt "github.com/golang-jwt/jwt/v4"
 )
@@ -14,8 +15,16 @@ func authenticate(r *http.Request, cfg *Config) (userId string, e serverError) {
 		return "", serverError{"MISSING_AUTHORIZATION_HEADER", "Authorization header must be sent"}
 	}
 	// Ensure that we have a single value
+	values := strings.Split(auth, ",")
+	if len(values) != 1 {
+		return "", serverError{"MALFORMED_AUTHORIZATION_HEADER", "Authorization header must contain a single value"}
+	}
 
 	// Ensure that the value is "Bearer <jwt>"
+	parts := strings.Fields(strings.TrimSpace(values[0]))
+	if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") {
+		return "", serverError{"MALFORMED_AUTHORIZATION_HEADER", "Authorization header must contain Bearer <jwt>"}
+	}
 
 	// Ensure that the jwt is valid
 
