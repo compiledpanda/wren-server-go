@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	jwt "github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 func authenticate(r *http.Request, cfg *Config) (userId string, e serverError) {
