@@ -32,6 +32,7 @@ func main() {
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
 	})
+	t.Header["kid"] = "test"
 	token, _ := t.SignedString(privateKey)
 
 	fmt.Println(token)
