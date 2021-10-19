@@ -2,9 +2,11 @@ package server
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
+	"github.com/boltdb/bolt"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/rs/zerolog/log"
 )
@@ -32,12 +34,8 @@ func authenticate(r *http.Request, cfg *Config) (userId string, e serverError) {
 		return "", serverError{"MALFORMED_AUTHORIZATION_HEADER", "Authorization header must contain Bearer <jwt>"}
 	}
 
-	// Parse and Verify JWT
-	jwt.ParseWithClaims(parts[1], &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
-		// Ensure token is valid
-		if !token.Valid {
-			return nil, errors.New("invalid token")
-		}
+	// Parse and validate the token
+	_, err := jwt.ParseWithClaims(parts[1], &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// Ensure we are using a valid algorithm
 		if !validAlgorithms[token.Method.Alg()] {
 			return nil, errors.New("invalid algorithm")
@@ -48,41 +46,42 @@ func authenticate(r *http.Request, cfg *Config) (userId string, e serverError) {
 			return nil, errors.New("kid must be present and a string")
 		}
 		// Ensure claims parsed correctly
-		claims, ok := token.Claims.(jwt.RegisteredClaims)
+		claims, ok := token.Claims.(*jwt.RegisteredClaims)
 		if !ok {
 			return nil, errors.New("invalid claims")
 		}
-		// Ensure token was issued before now
-		// TODO
-		// Ensure token expires after now
-		// TODO
 
 		// Get User ID and retrieve key
 		userId = claims.Subject
-
-		log.Info().Str("kid", kid).Str("userId", userId)
-
-		return nil, nil
+		var pem []byte
+		err := cfg.DB.View(func(tx *bolt.Tx) error {
+			// Get key (or nil if it does not exist)
+			b := tx.Bucket([]byte(USER_KEY))
+			pem = b.Get([]byte(fmt.Sprintf("%s:%s", userId, kid)))
+			return nil
+		})
+		// Handle key retrieval errors
+		if err != nil {
+			log.Error().Stack().Err(err).Msg("Unable to retrieve key")
+			return nil, errors.New("unable to retrieve key")
+		}
+		if pem == nil {
+			return nil, errors.New("kid not found")
+		}
+		// Return the correct key based on the algorithm
+		switch alg := token.Method.Alg(); alg {
+		case "RS256":
+			return jwt.ParseRSAPublicKeyFromPEM(pem)
+		case "ES256":
+			return jwt.ParseECPublicKeyFromPEM(pem)
+		default:
+			return nil, errors.New("unknown alg")
+		}
 	})
 
-	// tokenString := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIiLCJuYmYiOjE0NDQ0Nzg0MDB9.u1riaD1rW97opCoAuRCTy4w58Br-Zk-bh7vLiRIsrpU"
+	if err != nil {
+		return "", serverError{"UNAUTHORIZED", fmt.Sprintf("JWT Validation Failed: %s", err.Error())}
+	}
 
-	// token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-	// 	// Don't forget to validate the alg is what you expect:
-	// 	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-	// 		return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-	// 	}
-
-	// 	// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-	// 	return []byte("my_secret_key"), nil
-	// })
-
-	// if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-	// 	fmt.Println(claims["foo"], claims["nbf"])
-	// } else {
-	// 	fmt.Println(err)
-	// }
-
-	// Validate the JWT
 	return
 }

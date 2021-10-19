@@ -37,6 +37,11 @@ func routes(cfg *Config) *mux.Router {
 	return r
 }
 
+const tmpKey = `-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESbzFCGDi4cv6wk3CrIVe0jvWZZhu
+CjBSpUIYr1PNxC1hU54o+jNd1Y8lX13fwSmiRzkvNjrz0lTXENsEsTjvgA==
+-----END PUBLIC KEY-----`
+
 func openDB(path string) (db *bolt.DB, err error) {
 	db, err = bolt.Open(path, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
@@ -53,9 +58,13 @@ func openDB(path string) (db *bolt.DB, err error) {
 		if err != nil {
 			return fmt.Errorf("could not create %s bucket: %v", USER, err)
 		}
-		_, err = tx.CreateBucketIfNotExists([]byte(USER_KEY))
+		keys, err := tx.CreateBucketIfNotExists([]byte(USER_KEY))
 		if err != nil {
 			return fmt.Errorf("could not create %s bucket: %v", USER_KEY, err)
+		}
+		err = keys.Put([]byte("test:test"), []byte(tmpKey))
+		if err != nil {
+			return fmt.Errorf("could not save test key: %v", err)
 		}
 		return nil
 	})
