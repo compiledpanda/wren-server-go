@@ -37,11 +37,6 @@ func routes(cfg *Config) *mux.Router {
 	return r
 }
 
-const tmpKey = `-----BEGIN PUBLIC KEY-----
-MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESbzFCGDi4cv6wk3CrIVe0jvWZZhu
-CjBSpUIYr1PNxC1hU54o+jNd1Y8lX13fwSmiRzkvNjrz0lTXENsEsTjvgA==
------END PUBLIC KEY-----`
-
 func openDB(path string, cfg *Config) (db *bolt.DB, err error) {
 	db, err = bolt.Open(path, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
