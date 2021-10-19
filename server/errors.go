@@ -1,6 +1,8 @@
 package server
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type serverError struct {
 	Code        string `json:"code"`

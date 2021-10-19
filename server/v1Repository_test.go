@@ -17,7 +17,7 @@ func TestV1GetRoot(t *testing.T) {
 }
 
 func TestV1GetMetadata(t *testing.T) {
-	db, err := openDB("../test_data/TestV1GetMetadata.db")
+	db, err := openDB("../test_data/TestV1GetMetadata.db", &Config{})
 	if err != nil {
 		db.Close()
 		t.Fatalf("DB Open Error: %v", err)
@@ -45,7 +45,7 @@ func TestV1GetMetadata(t *testing.T) {
 }
 
 func TestV1PutMetadata(t *testing.T) {
-	db, err := openDB("../test_data/TestV1PutMetadata.db")
+	db, err := openDB("../test_data/TestV1PutMetadata.db", &Config{})
 	if err != nil {
 		db.Close()
 		t.Fatalf("DB Open Error: %v", err)

@@ -17,7 +17,7 @@ func TestE2EV1GetRoot(t *testing.T) {
 }
 
 func TestE2EV1GetMetadata(t *testing.T) {
-	db, err := openDB("../test_data/TestE2EV1GetMetadata.db")
+	db, err := openDB("../test_data/TestE2EV1GetMetadata.db", &Config{})
 	if err != nil {
 		t.Fatalf("DB Open Error: %v", err)
 		db.Close()
@@ -39,7 +39,7 @@ func TestE2EV1GetMetadata(t *testing.T) {
 }
 
 func TestE2EV1PutMetadata(t *testing.T) {
-	db, err := openDB("../test_data/TestE2EV1PutMetadata.db")
+	db, err := openDB("../test_data/TestE2EV1PutMetadata.db", &Config{})
 	if err != nil {
 		t.Fatalf("DB Open Error: %v", err)
 		db.Close()

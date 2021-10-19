@@ -42,7 +42,7 @@ MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESbzFCGDi4cv6wk3CrIVe0jvWZZhu
 CjBSpUIYr1PNxC1hU54o+jNd1Y8lX13fwSmiRzkvNjrz0lTXENsEsTjvgA==
 -----END PUBLIC KEY-----`
 
-func openDB(path string) (db *bolt.DB, err error) {
+func openDB(path string, cfg *Config) (db *bolt.DB, err error) {
 	db, err = bolt.Open(path, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return
@@ -50,21 +50,36 @@ func openDB(path string) (db *bolt.DB, err error) {
 
 	// Ensure buckets exist
 	err = db.Update(func(tx *bolt.Tx) error {
+		// Reporitory
 		_, err := tx.CreateBucketIfNotExists([]byte(REPOSITORY))
 		if err != nil {
 			return fmt.Errorf("could not create %s bucket: %v", REPOSITORY, err)
 		}
-		_, err = tx.CreateBucketIfNotExists([]byte(USER))
+		// Users
+		users, err := tx.CreateBucketIfNotExists([]byte(USER))
 		if err != nil {
 			return fmt.Errorf("could not create %s bucket: %v", USER, err)
 		}
+		if cfg.Bootstrap {
+			err = users.Put([]byte(cfg.BootstrapUserId), []byte(""))
+			if err != nil {
+				return fmt.Errorf("could not save boostrap user: %v", err)
+			}
+		}
+		// User Keys
 		keys, err := tx.CreateBucketIfNotExists([]byte(USER_KEY))
 		if err != nil {
 			return fmt.Errorf("could not create %s bucket: %v", USER_KEY, err)
 		}
-		err = keys.Put([]byte("test:test"), []byte(tmpKey))
-		if err != nil {
-			return fmt.Errorf("could not save test key: %v", err)
+		if cfg.Bootstrap {
+			err = keys.Put(userPublicKeyKey(cfg.BootstrapUserId, cfg.BootstrapKeyId), []byte(cfg.BootstrapPublicKey))
+			if err != nil {
+				return fmt.Errorf("could not save bootstrap public key: %v", err)
+			}
+			err = keys.Put(userPublicKeyMetadata(cfg.BootstrapUserId, cfg.BootstrapKeyId), []byte(""))
+			if err != nil {
+				return fmt.Errorf("could not save bootstrap public key metadata: %v", err)
+			}
 		}
 		return nil
 	})
@@ -74,7 +89,7 @@ func openDB(path string) (db *bolt.DB, err error) {
 func Setup(cfg *Config) (srv *http.Server, err error) {
 	// Open & setup our Database
 	// TODO #2 Pull bolt db name and options from config
-	db, err := openDB("wren.db")
+	db, err := openDB("wren.db", cfg)
 	if err != nil {
 		return
 	}

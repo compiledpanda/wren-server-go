@@ -24,6 +24,7 @@ Note: # prefix denotes a bucket
   <user id>: metadata
 #user_key
   <user id & key id>: public key
+  <user id & key id & metadata>: metadata
 #role
   <role id>: metadata
 #role_user

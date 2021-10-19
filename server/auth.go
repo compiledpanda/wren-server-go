@@ -57,7 +57,7 @@ func authenticate(r *http.Request, cfg *Config) (userId string, e serverError) {
 		err := cfg.DB.View(func(tx *bolt.Tx) error {
 			// Get key (or nil if it does not exist)
 			b := tx.Bucket([]byte(USER_KEY))
-			pem = b.Get([]byte(fmt.Sprintf("%s:%s", userId, kid)))
+			pem = b.Get(userPublicKeyKey(userId, kid))
 			return nil
 		})
 		// Handle key retrieval errors

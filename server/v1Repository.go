@@ -58,6 +58,7 @@ func v1PutMetadata(cfg *Config) func(w http.ResponseWriter, r *http.Request) {
 		_, e := authenticate(r, cfg)
 		if (e != serverError{}) {
 			returnJSON(w, http.StatusUnauthorized, e)
+			return
 		}
 		// TODO #16 Authorize
 

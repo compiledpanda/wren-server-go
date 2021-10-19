@@ -18,7 +18,15 @@ func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	// TODO #2 Call config.Get() and pass in cfg object to server.Setup()
-	cfg := &server.Config{}
+	cfg := &server.Config{
+		Bootstrap:       true,
+		BootstrapUserId: "test",
+		BootstrapKeyId:  "test",
+		BootstrapPublicKey: `-----BEGIN PUBLIC KEY-----
+MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEVAak+CPoW7uo54s8zV00AOhHAv8e
++LKokWPBLwqoO4fIt7bEBBvF6c5blv9+fW8h+E0gwNBXpCDZLPue8K9/uQ==
+-----END PUBLIC KEY-----`,
+	}
 
 	// Setup our Server
 	srv, err := server.Setup(cfg)
