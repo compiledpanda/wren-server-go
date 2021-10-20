@@ -33,6 +33,11 @@ func TestAuthenticate(t *testing.T) {
 		{"Bearer jwt1 jwt2", "", serverError{"MALFORMED_AUTHORIZATION_HEADER", "Authorization header must contain Bearer <jwt>"}},
 		{"token jwt1", "", serverError{"MALFORMED_AUTHORIZATION_HEADER", "Authorization header must contain Bearer <jwt>"}},
 		{"<invalid alg>", "", serverError{"UNAUTHORIZED", "JWT Validation Failed: invalid algorithm"}},
+		{"<missing kid>", "", serverError{"UNAUTHORIZED", "TODO"}},
+		{"<invalid claim>", "", serverError{"UNAUTHORIZED", "TODO"}},
+		{"<no public key>", "", serverError{"UNAUTHORIZED", "TODO"}},
+		{"<mismatched alg>", "", serverError{"UNAUTHORIZED", "TODO"}},
+		{"<valid>", "", serverError{"UNAUTHORIZED", "TODO"}},
 	}
 
 	for i, tc := range tt {
